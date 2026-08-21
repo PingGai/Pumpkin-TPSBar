@@ -75,7 +75,7 @@ cargo +1.95.0 clippy --target x86_64-pc-windows-msvc --all-targets -- -D warning
 cargo +1.95.0 build --release
 ```
 
-`.cargo/config.toml` 已将默认目标设为 `wasm32-wasip2`。正常构建产物应位于 `target/wasm32-wasip2/release/tpsbar.wasm`。
+`.cargo/config.toml` 已将默认目标设为 `wasm32-wasip2`。Cargo 原始构建产物位于 `target/wasm32-wasip2/release/tpsbar.wasm`；GitHub Actions 和 Release 会复制为带版本号的 `tpsbar-v0.1.wasm`。
 
 GitHub Actions 会在 push、Pull Request 和手动触发时运行格式检查、测试、Clippy，并上传可下载的 WASM 构建产物。
 
@@ -87,7 +87,7 @@ GitHub Actions 会在 push、Pull Request 和手动触发时运行格式检查�
 
 ## 安装
 
-将 `tpsbar.wasm` 放入 Pumpkin 的插件目录并启动服务端。首次加载时，Pumpkin 会请求批准插件的两个私有数据目录权限。插件只申请：
+将 Release 中的 `tpsbar-v0.1.wasm` 放入 Pumpkin 的插件目录并启动服务端。首次加载时，Pumpkin 会请求批准插件的两个私有数据目录权限。插件只申请：
 
 - `fs.read.data`
 - `fs.write.data`

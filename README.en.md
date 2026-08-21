@@ -75,7 +75,7 @@ cargo +1.95.0 clippy --target x86_64-pc-windows-msvc --all-targets -- -D warning
 cargo +1.95.0 build --release
 ```
 
-`.cargo/config.toml` sets `wasm32-wasip2` as the default target. Under normal conditions, the result should be written to `target/wasm32-wasip2/release/tpsbar.wasm`.
+`.cargo/config.toml` sets `wasm32-wasip2` as the default target. Cargo's raw output is written to `target/wasm32-wasip2/release/tpsbar.wasm`; GitHub Actions and Releases copy it to the versioned name `tpsbar-v0.1.wasm`.
 
 GitHub Actions runs formatting, tests, Clippy, and a WASM release build on pushes, pull requests, and manual dispatches, then uploads the WASM artifact for download.
 
@@ -87,7 +87,7 @@ This is not a TPSBar business-logic error. Rust 1.95 has been verified to produc
 
 ## Installation
 
-Place `tpsbar.wasm` in Pumpkin's plugin directory and start the server. On first load, Pumpkin asks for the plugin's two private data-directory permissions. TPSBar requests only:
+Place `tpsbar-v0.1.wasm` from the Release in Pumpkin's plugin directory and start the server. On first load, Pumpkin asks for the plugin's two private data-directory permissions. TPSBar requests only:
 
 - `fs.read.data`
 - `fs.write.data`
