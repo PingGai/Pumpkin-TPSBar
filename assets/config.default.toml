@@ -1,0 +1,36 @@
+# TPSBar 配置文件
+# 20 tick 在服务端维持 20 TPS 时约等于 1 秒。
+schema_version = 1
+refresh_interval_ticks = 20
+target_tps = 20.0
+fallback_locale = "zh_cn"
+
+[bar]
+# 血条进度指标：mspt、tps 或 ping。默认 MSPT。
+metric = "mspt"
+# MSPT 达到此值时血条填满；默认 50mspt。
+mspt_full = 50.0
+# Ping 达到此值时血条填满；仅在 metric = "ping" 时使用。
+ping_full = 200.0
+
+[permission]
+# Pumpkin 权限等级：0 普通玩家、1 管理员助手、2 游戏管理员、3 管理员、4 所有者。
+default_op_level = 3
+
+[thresholds.mspt]
+# [0, 35) 绿色；[35, 50) 黄色；[50, 80) 金色；[80, +∞) 红色。
+green_below = 35.0
+yellow_below = 50.0
+gold_below = 80.0
+
+[thresholds.tps]
+# [19, +∞) 绿色；[17, 19) 黄色；[12, 17) 金色；[0, 12) 红色。
+red_below = 12.0
+gold_below = 17.0
+yellow_below = 19.0
+
+[thresholds.ping]
+# [0, 60] 绿色；[61, 120] 黄色；[121, 200] 金色；[201, +∞) 红色。
+green_at_most = 60
+yellow_at_most = 120
+gold_at_most = 200

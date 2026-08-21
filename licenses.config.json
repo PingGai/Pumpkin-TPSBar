@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "generator": "cargo-about 0.8.x",
+  "target": "wasm32-wasip2",
+  "projectLicense": "Apache-2.0",
+  "acceptedLicenses": [
+    "Apache-2.0",
+    "MIT",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Unicode-3.0",
+    "Zlib"
+  ],
+  "deniedLicenseFamilies": [
+    "AGPL",
+    "GPL",
+    "LGPL"
+  ],
+  "outputs": {
+    "summary": "THIRD-PARTY-NOTICES.md",
+    "licenseDirectory": "LICENSES"
+  },
+  "manualSources": [
+    {
+      "name": "Pumpkin Plugin WIT 0.1",
+      "licenseExpression": "MIT OR Apache-2.0",
+      "selectedLicense": "Apache-2.0",
+      "reason": "WIT binding input is not represented as a Cargo package"
+    }
+  ]
+}

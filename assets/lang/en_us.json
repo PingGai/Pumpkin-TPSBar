@@ -1,0 +1,8 @@
+{
+  "command.enabled": "TPSBar enabled.",
+  "command.disabled": "TPSBar disabled.",
+  "command.metric_set": "BossBar progress metric set to {metric}.",
+  "error.player_only": "Only players can use /tpsbar.",
+  "error.state_save": "Unable to save TPSBar state: {error}",
+  "error.runtime_unavailable": "TPSBar has not finished initializing."
+}

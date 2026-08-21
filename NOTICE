@@ -1,0 +1,14 @@
+TPSBar
+Copyright 2025-2026 PING
+
+本项目根据 Apache License 2.0 开源。完整条款见 LICENSE。
+
+第三方软件的归属、许可证摘要与许可证正文分别见：
+
+- THIRD-PARTY-NOTICES.md
+- LICENSES/
+
+界面布局参考 Purpur 的 TPSBar 使用习惯。
+
+本项目是第三方 Pumpkin 插件，与 PumpkinMC 官方组织无隶属、赞助或背书关系。
+This is a third-party Pumpkin plugin and is not affiliated with, sponsored by, or endorsed by PumpkinMC.

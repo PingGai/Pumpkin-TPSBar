@@ -1,0 +1,13 @@
+# cargo-about 配置。许可证归档必须以 Cargo.lock 的实际依赖图为准。
+accepted = [
+  "Apache-2.0",
+  "MIT",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "ISC",
+  "Unicode-3.0",
+  "Zlib",
+]
+
+max-depth = 1
+private = { ignore = true }

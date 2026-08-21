@@ -1,0 +1,8 @@
+{
+  "command.enabled": "TPSBar 已开启。",
+  "command.disabled": "TPSBar 已关闭。",
+  "command.metric_set": "BossBar 进度指标已切换为 {metric}。",
+  "error.player_only": "只有玩家可以使用 /tpsbar。",
+  "error.state_save": "无法保存 TPSBar 状态：{error}",
+  "error.runtime_unavailable": "TPSBar 尚未完成初始化。"
+}

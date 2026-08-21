@@ -1,0 +1,31 @@
+# 第三方软件声明
+
+此文件由 cargo-about 根据 Cargo.lock 生成，请勿手动编辑。
+
+生成目标：`wasm32-wasip2`
+
+## 构建时 WIT
+
+- `Pumpkin Plugin WIT 0.1`：`MIT OR Apache-2.0`，本项目选择 Apache-2.0；正文归档为 `LICENSES/Pumpkin-plugin-WIT-Apache-2.0.txt`。
+
+WIT 由 `pumpkin-plugin-api` 的绑定宏在构建时读取，不会作为独立 Cargo 包出现在依赖图中，因此由生成脚本单独归档。
+
+## 许可证概览
+{{#each overview}}
+- {{name}}：{{count}} 个依赖
+{{/each}}
+
+## 依赖与许可证正文
+{{#each licenses}}
+
+### {{name}}（{{id}}）
+
+使用此许可证的依赖：
+{{#each used_by}}
+- `{{crate.name}} {{crate.version}}`{{#if crate.repository}} — {{crate.repository}}{{/if}}
+{{/each}}
+
+```text
+{{{text}}}
+```
+{{/each}}

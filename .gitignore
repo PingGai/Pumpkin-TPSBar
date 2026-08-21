@@ -1,0 +1,43 @@
+# Rust build output and local plugin binaries
+/target/
+/*.wasm
+*.wasm
+
+# IDE and Codex local state
+/.idea/
+/.vscode/
+/.codex/
+
+# Local workflow, profiling and release output
+/openspec/
+/docs/
+/MySpec/
+/Spec/
+/spec/
+/TEMP/
+/publish/
+/build/profiling/
+/build/cache/
+/build/tmp/
+/build/*.log
+/build/*.tmp
+/build/*.cache
+
+# Local runtime data and logs
+/data/
+/logs/
+/plugins/
+*.log
+*.log.gz
+*.tmp
+*.previous
+*.bak
+
+# Secrets and environment overrides
+.env
+.env.*
+
+# OS metadata
+.DS_Store
+Thumbs.db
+desktop.ini
