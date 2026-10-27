@@ -8,11 +8,19 @@ $ErrorActionPreference = 'Stop'
 $projectRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $versionPath = Join-Path $projectRoot 'build/version.txt'
 $manifestPath = Join-Path $projectRoot 'Cargo.toml'
+$toolchainPath = Join-Path $projectRoot 'rust-toolchain.toml'
 $releaseLine = ([IO.File]::ReadAllText($versionPath, [Text.Encoding]::UTF8)).Trim()
 
 if ($releaseLine -notmatch '^\d+\.\d+$') {
     throw "无效发布线版本：$releaseLine（build/version.txt 只能写 major.minor）"
 }
+
+$toolchainConfiguration = [IO.File]::ReadAllText($toolchainPath, [Text.Encoding]::UTF8)
+$toolchainMatch = [regex]::Match($toolchainConfiguration, '(?m)^channel\s*=\s*"(?<channel>[^"]+)"')
+if (-not $toolchainMatch.Success) {
+    throw 'rust-toolchain.toml 中未找到 channel。'
+}
+$toolchain = $toolchainMatch.Groups['channel'].Value
 
 $manifest = [IO.File]::ReadAllText($manifestPath, [Text.Encoding]::UTF8)
 $packageVersionMatch = [regex]::Match($manifest, '(?m)^version\s*=\s*"(?<version>[^"]+)"')
@@ -43,7 +51,7 @@ $destinationDirectory = [IO.Path]::GetFullPath($destinationDirectory)
 
 Push-Location -LiteralPath $projectRoot
 try {
-    & cargo build --locked --release --target wasm32-wasip2
+    & rustup run $toolchain cargo build --locked --release --target wasm32-wasip2
     if ($LASTEXITCODE -ne 0) {
         throw "Cargo 构建失败，退出代码：$LASTEXITCODE"
     }

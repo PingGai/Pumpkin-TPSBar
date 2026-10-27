@@ -23,7 +23,7 @@
   },
   "manualSources": [
     {
-      "name": "Pumpkin Plugin WIT 0.1",
+      "name": "Pumpkin Plugin WIT 0.1 (Pumpkin 0.2.1+26.3-26.51)",
       "licenseExpression": "MIT OR Apache-2.0",
       "selectedLicense": "Apache-2.0",
       "reason": "WIT binding input is not represented as a Cargo package"

@@ -7,7 +7,7 @@ mod metrics;
 mod runtime;
 mod state;
 
-use std::path::PathBuf;
+use std::{path::PathBuf, sync::Mutex};
 
 use pumpkin_plugin_api::{
     Context, Plugin, PluginMetadata,
@@ -29,14 +29,14 @@ use crate::{
 
 struct TpsBarPlugin {
     runtime: SharedRuntime,
-    refresh_task_id: Option<u32>,
+    refresh_task_id: Mutex<Option<u32>>,
 }
 
 impl Plugin for TpsBarPlugin {
     fn new() -> Self {
         Self {
             runtime: new_shared_runtime(),
-            refresh_task_id: None,
+            refresh_task_id: Mutex::new(None),
         }
     }
 
@@ -54,7 +54,7 @@ impl Plugin for TpsBarPlugin {
         }
     }
 
-    fn on_load(&mut self, context: Context) -> pumpkin_plugin_api::Result<()> {
+    fn on_load(&self, context: Context) -> pumpkin_plugin_api::Result<()> {
         let data_folder = PathBuf::from(context.get_data_folder());
         let loaded_config = load_or_create(&data_folder)?;
         if let Some(warning) = &loaded_config.warning {
@@ -94,11 +94,14 @@ impl Plugin for TpsBarPlugin {
         )?;
 
         let runtime = self.runtime.clone();
-        self.refresh_task_id = Some(scheduler::schedule_repeating_task(
-            1,
-            refresh_interval_ticks,
-            move |server| refresh_all(&server, &runtime),
-        ));
+        let refresh_task_id =
+            scheduler::schedule_repeating_task(1, refresh_interval_ticks, move |server| {
+                refresh_all(&server, &runtime);
+            });
+        *self
+            .refresh_task_id
+            .lock()
+            .map_err(|error| error.to_string())? = Some(refresh_task_id);
 
         tracing::info!(
             version = env!("CARGO_PKG_VERSION"),
@@ -109,8 +112,13 @@ impl Plugin for TpsBarPlugin {
         Ok(())
     }
 
-    fn on_unload(&mut self, _context: Context) -> pumpkin_plugin_api::Result<()> {
-        if let Some(task_id) = self.refresh_task_id.take() {
+    fn on_unload(&self, _context: Context) -> pumpkin_plugin_api::Result<()> {
+        let task_id = self
+            .refresh_task_id
+            .lock()
+            .map_err(|error| error.to_string())?
+            .take();
+        if let Some(task_id) = task_id {
             scheduler::cancel_task(task_id);
         }
         let result = shutdown(&self.runtime);

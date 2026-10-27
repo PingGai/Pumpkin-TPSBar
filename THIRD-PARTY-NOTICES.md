@@ -6,7 +6,7 @@
 
 ## 构建时 WIT
 
-- `Pumpkin Plugin WIT 0.1`：`MIT OR Apache-2.0`，本项目选择 Apache-2.0；正文归档为 `LICENSES/Pumpkin-plugin-WIT-Apache-2.0.txt`。
+- `Pumpkin Plugin WIT 0.1 (Pumpkin 0.2.1+26.3-26.51)`：`MIT OR Apache-2.0`，本项目选择 Apache-2.0；正文归档为 `LICENSES/Pumpkin-plugin-WIT-Apache-2.0.txt`。
 
 WIT 由 `pumpkin-plugin-api` 的绑定宏在构建时读取，不会作为独立 Cargo 包出现在依赖图中，因此由生成脚本单独归档。
 
@@ -251,15 +251,15 @@ WIT 由 `pumpkin-plugin-api` 的绑定宏在构建时读取，不会作为独立
 - `postcard 1.1.3` — https://github.com/jamesmunns/postcard
 - `rustc_version 0.4.1` — https://github.com/djc/rustc-version-rs
 - `stable_deref_trait 1.2.1` — https://github.com/storyyeller/stable_deref_trait
-- `wasm-encoder 0.254.0` — https://github.com/bytecodealliance/wasm-tools/tree/main/crates/wasm-encoder
-- `wasm-metadata 0.254.0` — https://github.com/bytecodealliance/wasm-tools/tree/main/crates/wasm-metadata
-- `wasmparser 0.254.0` — https://github.com/bytecodealliance/wasm-tools/tree/main/crates/wasmparser
-- `wit-bindgen-core 0.60.0` — https://github.com/bytecodealliance/wit-bindgen
-- `wit-bindgen-rust-macro 0.60.0` — https://github.com/bytecodealliance/wit-bindgen
-- `wit-bindgen-rust 0.60.0` — https://github.com/bytecodealliance/wit-bindgen
-- `wit-bindgen 0.60.0` — https://github.com/bytecodealliance/wit-bindgen
-- `wit-component 0.254.0` — https://github.com/bytecodealliance/wasm-tools/tree/main/crates/wit-component
-- `wit-parser 0.254.0` — https://github.com/bytecodealliance/wasm-tools/tree/main/crates/wit-parser
+- `wasm-encoder 0.262.0` — https://github.com/bytecodealliance/wasm-tools/tree/main/crates/wasm-encoder
+- `wasm-metadata 0.262.0` — https://github.com/bytecodealliance/wasm-tools/tree/main/crates/wasm-metadata
+- `wasmparser 0.262.0` — https://github.com/bytecodealliance/wasm-tools/tree/main/crates/wasmparser
+- `wit-bindgen-core 0.63.0` — https://github.com/bytecodealliance/wit-bindgen
+- `wit-bindgen-rust-macro 0.63.0` — https://github.com/bytecodealliance/wit-bindgen
+- `wit-bindgen-rust 0.63.0` — https://github.com/bytecodealliance/wit-bindgen
+- `wit-bindgen 0.63.0` — https://github.com/bytecodealliance/wit-bindgen
+- `wit-component 0.262.0` — https://github.com/bytecodealliance/wasm-tools/tree/main/crates/wit-component
+- `wit-parser 0.262.0` — https://github.com/bytecodealliance/wasm-tools/tree/main/crates/wit-parser
 
 ```text
                               Apache License
@@ -469,11 +469,11 @@ limitations under the License.
 ### Apache License 2.0（Apache-2.0）
 
 使用此许可证的依赖：
-- `pumpkin-plugin-api 0.1.0`
+- `pumpkin-plugin-api 0.2.1+26.3-26.51`
 - `anyhow 1.0.104` — https://github.com/dtolnay/anyhow
 - `itoa 1.0.18` — https://github.com/dtolnay/itoa
 - `pin-project-lite 0.2.17` — https://github.com/taiki-e/pin-project-lite
-- `prettyplease 0.2.37` — https://github.com/dtolnay/prettyplease
+- `prettyplease 0.3.0` — https://github.com/dtolnay/prettyplease
 - `proc-macro2 1.0.107` — https://github.com/dtolnay/proc-macro2
 - `quote 1.0.47` — https://github.com/dtolnay/quote
 - `semver 1.0.28` — https://github.com/dtolnay/semver
@@ -482,7 +482,7 @@ limitations under the License.
 - `serde_derive 1.0.229` — https://github.com/serde-rs/serde
 - `serde_json 1.0.151` — https://github.com/serde-rs/json
 - `syn 2.0.119` — https://github.com/dtolnay/syn
-- `syn 3.0.3` — https://github.com/dtolnay/syn
+- `syn 3.0.9` — https://github.com/dtolnay/syn
 - `thiserror-impl 2.0.20` — https://github.com/dtolnay/thiserror
 - `thiserror 2.0.20` — https://github.com/dtolnay/thiserror
 - `unicode-ident 1.0.24` — https://github.com/dtolnay/unicode-ident

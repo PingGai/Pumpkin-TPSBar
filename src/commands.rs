@@ -12,29 +12,26 @@ use crate::runtime::{
 };
 
 pub fn build(runtime: SharedRuntime) -> Command {
-    let command = Command::new(
+    let by = CommandNode::literal("by")
+        .then(CommandNode::literal("mspt").execute(SetMetricHandler {
+            runtime: runtime.clone(),
+            metric: BarMetric::Mspt,
+        }))
+        .then(CommandNode::literal("tps").execute(SetMetricHandler {
+            runtime: runtime.clone(),
+            metric: BarMetric::Tps,
+        }))
+        .then(CommandNode::literal("ping").execute(SetMetricHandler {
+            runtime: runtime.clone(),
+            metric: BarMetric::Ping,
+        }));
+
+    Command::new(
         &["tpsbar".into()],
         "切换个人 TPS BossBar，或设置血条进度指标 / Toggle your TPSBar or set its progress metric",
     )
-    .execute(ToggleHandler {
-        runtime: runtime.clone(),
-    });
-
-    let by = CommandNode::literal("by");
-    by.then(CommandNode::literal("mspt").execute(SetMetricHandler {
-        runtime: runtime.clone(),
-        metric: BarMetric::Mspt,
-    }));
-    by.then(CommandNode::literal("tps").execute(SetMetricHandler {
-        runtime: runtime.clone(),
-        metric: BarMetric::Tps,
-    }));
-    by.then(CommandNode::literal("ping").execute(SetMetricHandler {
-        runtime,
-        metric: BarMetric::Ping,
-    }));
-    command.then(by);
-    command
+    .execute(ToggleHandler { runtime })
+    .then(by)
 }
 
 struct ToggleHandler {
@@ -168,7 +165,5 @@ impl CommandHandler for SetMetricHandler {
 }
 
 fn colored_message(message: &str, color: NamedColor) -> TextComponent {
-    let component = TextComponent::text(message);
-    component.color_named(color);
-    component
+    TextComponent::text(message).color_named(color)
 }
