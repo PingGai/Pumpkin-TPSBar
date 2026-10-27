@@ -49,18 +49,17 @@ jobs:
         shell: pwsh
         run: |
           $releaseLine = (Get-Content -Raw -LiteralPath 'build/version.txt').Trim()
-          if ($env:GITHUB_REF_TYPE -eq 'tag') {
-            if ($env:GITHUB_REF_NAME -ne "v$releaseLine") {
-              throw "Release tag $env:GITHUB_REF_NAME does not match v$releaseLine"
-            }
-            $versionMode = @('-Release')
-          } else {
-            $versionMode = @()
+          $isReleaseTag = $env:GITHUB_REF_TYPE -eq 'tag'
+          if ($isReleaseTag -and $env:GITHUB_REF_NAME -ne "v$releaseLine") {
+            throw "Release tag $env:GITHUB_REF_NAME does not match v$releaseLine"
           }
 
           $outputDirectory = Join-Path 'target/ci-artifacts' $env:GITHUB_RUN_ID
-          $arguments = @('-OutputDirectory', $outputDirectory) + $versionMode
-          & ./build/build.ps1 @arguments
+          if ($isReleaseTag) {
+            & ./build/build.ps1 -Release -OutputDirectory $outputDirectory
+          } else {
+            & ./build/build.ps1 -OutputDirectory $outputDirectory
+          }
           if ($LASTEXITCODE -ne 0) { throw "build.ps1 exited with code $LASTEXITCODE" }
 
           $artifact = Get-ChildItem -LiteralPath $outputDirectory -Filter 'tpsbar-*.wasm' | Select-Object -First 1
