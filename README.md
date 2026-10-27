@@ -6,7 +6,7 @@ TPSBar 是一个面向 Pumpkin 服务端的 Rust/WASM 插件。玩家可用 `/tp
 
 ![TPSBar 效果展示](assets/screenshots/tpsbar-example.png)
 
-本项目是 PING 开发的第三方 Pumpkin 插件，与 PumpkinMC 官方组织无隶属、赞助或背书关系。
+本项目是由 PING 监督、设计功能并负责发布、由 **LLM 生成代码**的第三方 Pumpkin 插件，与 PumpkinMC 官方组织无隶属、赞助或背书关系。
 
 ```text
 TPS: 20.00  MSPT: 19.24 ms  PING: 8 ms
@@ -57,39 +57,43 @@ BossBar 进度默认配置为：
 
 ## I18N 策略
 
-TPSBar 根据每名玩家客户端上报的 locale 选择消息，而不是用配置文件强制全服共用一种语言。v0.1.0 内置 `zh_cn` 与 `en_us`；`fallback_locale` 只在客户端语言不受支持时生效。
+TPSBar 根据每名玩家客户端上报的 locale 选择消息，而不是用配置文件强制全服共用一种语言。v0.2.0 内置 `zh_cn` 与 `en_us`；`fallback_locale` 只在客户端语言不受支持时生效。
 
-Pumpkin 已提供官方 I18N WIT，但当前宿主端的枚举到 locale 字符串转换会让许多语言意外回退到英语。因此本版本使用官方 `Player.get_locale()` 获取玩家语言，再读取插件内置语言表；待官方转换层修复并稳定后可迁移到统一翻译注册接口。
+TPSBar 根据每名玩家客户端上报的 locale，在简体中文和英文消息间选择；其他语言使用配置的 `fallback_locale`。
 
 ## 构建
 
-要求 Rust 1.95 或更高版本，并安装 `wasm32-wasip2` 目标。项目已提供 `rust-toolchain.toml` 固定经过验证的工具链：
+要求 Rust 1.96 或更高版本，并安装 `wasm32-wasip2` 目标。项目通过 `rust-toolchain.toml` 固定为已验证的 Rust 1.97.1：
 
-Plugin API 固定使用 Pumpkin 提交 `0844e929112d5cda772bc8b0de51e38930142704` 的官方 Git 依赖，确保本地与 CI 使用同一套 API。
+Plugin API 固定在 Pumpkin `0.2.1+26.3-26.51` 标签提交 `224f9f8144ca53a8d0800acb87607d714196e2a6`，本地与 CI 构建都会使用这份上游代码。
 
 ```powershell
 rustup target add wasm32-wasip2
-cargo +1.95.0 fmt --check
-cargo +1.95.0 test --target x86_64-pc-windows-msvc
-cargo +1.95.0 clippy --target x86_64-pc-windows-msvc --all-targets -- -D warnings
-cargo +1.95.0 build --release
+cargo +1.97.1 fmt --check
+cargo +1.97.1 test --target x86_64-pc-windows-msvc
+cargo +1.97.1 clippy --target x86_64-pc-windows-msvc --all-targets -- -D warnings
+cargo +1.97.1 build --release
 ```
 
-`.cargo/config.toml` 已将默认目标设为 `wasm32-wasip2`。`build/version.txt` 是唯一的发布线版本来源，当前为 `0.1`；Cargo 元数据固定为 `0.1.0`。Cargo 原始构建产物位于 `target/wasm32-wasip2/release/tpsbar.wasm`。
+`.cargo/config.toml` 已将默认目标设为 `wasm32-wasip2`。`build/version.txt` 是唯一的发布线版本来源，当前为 `0.2`；Cargo 元数据固定为 `0.2.0`。Cargo 原始构建产物位于 `target/wasm32-wasip2/release/tpsbar.wasm`。
 
-本地开发构建可运行 `\.\build\build.ps1`，生成带 12 位时间戳的快照到 `publish/`。正式构建可运行 `\.\build\build.ps1 -Release -OutputDirectory ..\..\OUTPUT\tpsbar`，生成 `tpsbar-v0.1.wasm`。GitHub Actions 对非 tag 构建使用快照版本，对匹配的 `v0.1` tag 使用正式版本。
+本地开发构建可运行 `\.\build\build.ps1`，生成带 12 位时间戳的快照到 `publish/`。正式构建可运行 `\.\build\build.ps1 -Release -OutputDirectory ..\..\OUTPUT\tpsbar`，生成 `tpsbar-v0.2.wasm`。GitHub Actions 对非 tag 构建使用快照版本，对匹配的 `v0.2` tag 使用正式版本。
 
 GitHub Actions 会在 push、Pull Request 和手动触发时运行格式检查、测试、Clippy，并上传可下载的 WASM 构建产物。
 
-### 工具链兼容性说明
+### Pumpkin 兼容性
 
-截至 Pumpkin 提交 `0844e929112d5cda772bc8b0de51e38930142704`，官方 WIT 含 `generic-9x1` 等不符合 Component Model kebab-case 规则的标识符。默认 Rust 1.90 工具链中的 `wasm-component-ld 0.5.15` 会在最终组件化时拒绝该 WIT；本项目已验证 Rust 1.95 的 `wasm-component-ld 0.5.21` 可以生成可加载的 Release WASM。静态扫描在五个 WIT 文件中找到 91 个同类候选，首个报错并非孤例。
-
-这不是 TPSBar 业务代码错误。Rust 1.95 已验证可以生成可加载的 Release WASM；若使用旧 linker，请升级 Rust 工具链。插件仍必须和目标 Pumpkin 服务端使用匹配的 WIT/API。
+TPSBar v0.2 面向 Pumpkin `0.2.1+26.3-26.51`，并已在该版本的服务端完成实际加载验证。
 
 ## 安装
 
-将 Release 中的 `tpsbar-v0.1.wasm` 放入 Pumpkin 的插件目录并启动服务端。首次加载时，Pumpkin 会请求批准插件的两个私有数据目录权限。插件只申请：
+在 Pumpkin 可执行文件所在目录打开终端，运行以下命令通过 PPM 安装：
+
+```powershell
+ppm install 0Y9WQt4l
+```
+
+也可以将 Release 中的 `tpsbar-v0.2.wasm` 放入 Pumpkin 的插件目录并启动服务端。首次加载时，Pumpkin 会请求批准插件的两个私有数据目录权限。插件只申请：
 
 - `fs.read.data`
 - `fs.write.data`
