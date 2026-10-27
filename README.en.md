@@ -32,7 +32,7 @@ The interface layout is inspired by the familiar TPSBar design in Purpur.
 | --- | --- | --- |
 | `tpsbar:command.toggle` | `op level 3` | Toggle the sender's own TPSBar |
 
-Pumpkin currently requires plugin permissions to use the `plugin-namespace:node` format, so this differs from the dot-separated nodes commonly used by Bukkit and Paper. The default level can be configured from `0` through `4`; level `0` makes the command available to regular players by default.
+Pumpkin v0.2's permission WIT defines a node as a full name (for example, `minecraft:command.gamemode`). The host registers the supplied string as-is. TPSBar registers `tpsbar:command.toggle` in the `plugin-namespace:node` form, rather than Bukkit/Paper's dot-separated form. The default operator level can be set from `0` to `4`; level `0` makes it available to regular players by default.
 
 ## Configuration and data
 
@@ -65,7 +65,7 @@ TPSBar selects Simplified Chinese or English messages from each player's client-
 
 Rust 1.96 or later and the `wasm32-wasip2` target are required. `rust-toolchain.toml` pins the verified Rust 1.97.1 toolchain:
 
-The Plugin API is pinned to Pumpkin `0.2.1+26.3-26.51` at commit `224f9f8144ca53a8d0800acb87607d714196e2a6`, so local and CI builds use the same upstream source.
+The Plugin API is pinned to the Pumpkin `0.2.1` tag at commit `224f9f8144ca53a8d0800acb87607d714196e2a6`, so local and CI builds use the same upstream source.
 
 ```powershell
 rustup target add wasm32-wasip2
@@ -77,13 +77,13 @@ cargo +1.97.1 build --release
 
 `.cargo/config.toml` sets `wasm32-wasip2` as the default target. `build/version.txt` is the single release-line source and currently contains `0.2`; Cargo metadata stays at `0.2.0`. Cargo's raw output is written to `target/wasm32-wasip2/release/tpsbar.wasm`.
 
-For a local development snapshot, run `\.\build\build.ps1`; it writes a 12-digit timestamped artifact to `publish/`. For a release, run `\.\build\build.ps1 -Release -OutputDirectory ..\..\OUTPUT\tpsbar` to create `tpsbar-v0.2.wasm`. GitHub Actions uses snapshot versions for non-tag builds and the release version for a matching `v0.2` tag.
+For a local development snapshot, run `.\build\build.ps1`; it writes `tpsbar-0.2.0-dev.<12-digit timestamp>+0.2.1.wasm` to `publish/`. For a release, run `.\build\build.ps1 -Release -OutputDirectory ..\..\OUTPUT\tpsbar` to create `tpsbar-v0.2+0.2.1.wasm`. GitHub Actions calls the same build script: non-tag builds use timestamped snapshots, while a matching `v0.2` tag uses the release version.
 
 GitHub Actions runs formatting, tests, Clippy, and a WASM release build on pushes, pull requests, and manual dispatches, then uploads the WASM artifact for download.
 
 ### Pumpkin compatibility
 
-TPSBar v0.2 targets Pumpkin `0.2.1+26.3-26.51` and has been loaded successfully by a server running that version.
+TPSBar v0.2 targets Pumpkin `0.2.1` and has been loaded successfully by a server running that version.
 
 ## Installation
 
@@ -93,7 +93,7 @@ Open a terminal in the directory containing the Pumpkin executable and install w
 ppm install 0Y9WQt4l
 ```
 
-Alternatively, place `tpsbar-v0.2.wasm` from the Release in Pumpkin's plugin directory and start the server. On first load, Pumpkin asks for the plugin's two private data-directory permissions. TPSBar requests only:
+Alternatively, place `tpsbar-v0.2+0.2.1.wasm` from the Release in Pumpkin's plugin directory and start the server. On first load, Pumpkin asks for the plugin's two private data-directory permissions. TPSBar requests only:
 
 - `fs.read.data`
 - `fs.write.data`

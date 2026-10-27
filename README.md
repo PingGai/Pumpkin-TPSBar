@@ -32,7 +32,7 @@ TPS: 20.00  MSPT: 19.24 ms  PING: 8 ms
 | --- | --- | --- |
 | `tpsbar:command.toggle` | `op level 3` | 切换自己的 TPSBar |
 
-Pumpkin 当前要求插件权限使用 `插件命名空间:节点` 格式，所以这里不是 Bukkit/Paper 常见的点号节点。默认等级可在配置中设为 `0..4`；设为 `0` 等同普通玩家默认可用。
+Pumpkin v0.2 的权限 WIT 将权限节点定义为完整名称（例如 `minecraft:command.gamemode`）。注册时会原样使用节点字符串；本插件注册 `tpsbar:command.toggle`，格式为 `插件命名空间:节点`，不是 Bukkit/Paper 常见的点号格式。默认操作等级可在配置中设为 `0..4`；设为 `0` 等同普通玩家默认可用。
 
 ## 配置与数据
 
@@ -65,7 +65,7 @@ TPSBar 根据每名玩家客户端上报的 locale，在简体中文和英文消
 
 要求 Rust 1.96 或更高版本，并安装 `wasm32-wasip2` 目标。项目通过 `rust-toolchain.toml` 固定为已验证的 Rust 1.97.1：
 
-Plugin API 固定在 Pumpkin `0.2.1+26.3-26.51` 标签提交 `224f9f8144ca53a8d0800acb87607d714196e2a6`，本地与 CI 构建都会使用这份上游代码。
+Plugin API 固定在 Pumpkin `0.2.1` 标签提交 `224f9f8144ca53a8d0800acb87607d714196e2a6`，本地与 CI 构建都会使用这份上游代码。
 
 ```powershell
 rustup target add wasm32-wasip2
@@ -77,13 +77,13 @@ cargo +1.97.1 build --release
 
 `.cargo/config.toml` 已将默认目标设为 `wasm32-wasip2`。`build/version.txt` 是唯一的发布线版本来源，当前为 `0.2`；Cargo 元数据固定为 `0.2.0`。Cargo 原始构建产物位于 `target/wasm32-wasip2/release/tpsbar.wasm`。
 
-本地开发构建可运行 `\.\build\build.ps1`，生成带 12 位时间戳的快照到 `publish/`。正式构建可运行 `\.\build\build.ps1 -Release -OutputDirectory ..\..\OUTPUT\tpsbar`，生成 `tpsbar-v0.2.wasm`。GitHub Actions 对非 tag 构建使用快照版本，对匹配的 `v0.2` tag 使用正式版本。
+本地开发构建可运行 `.\build\build.ps1`，生成 `tpsbar-0.2.0-dev.<12位时间戳>+0.2.1.wasm` 到 `publish/`。正式构建可运行 `.\build\build.ps1 -Release -OutputDirectory ..\..\OUTPUT\tpsbar`，生成 `tpsbar-v0.2+0.2.1.wasm`。GitHub Actions 调用同一构建脚本：非 tag 构建使用时间戳快照，匹配的 `v0.2` tag 使用正式版本。
 
 GitHub Actions 会在 push、Pull Request 和手动触发时运行格式检查、测试、Clippy，并上传可下载的 WASM 构建产物。
 
 ### Pumpkin 兼容性
 
-TPSBar v0.2 面向 Pumpkin `0.2.1+26.3-26.51`，并已在该版本的服务端完成实际加载验证。
+TPSBar v0.2 面向 Pumpkin `0.2.1`，并已在该版本的服务端完成实际加载验证。
 
 ## 安装
 
@@ -93,7 +93,7 @@ TPSBar v0.2 面向 Pumpkin `0.2.1+26.3-26.51`，并已在该版本的服务端�
 ppm install 0Y9WQt4l
 ```
 
-也可以将 Release 中的 `tpsbar-v0.2.wasm` 放入 Pumpkin 的插件目录并启动服务端。首次加载时，Pumpkin 会请求批准插件的两个私有数据目录权限。插件只申请：
+也可以将 Release 中的 `tpsbar-v0.2+0.2.1.wasm` 放入 Pumpkin 的插件目录并启动服务端。首次加载时，Pumpkin 会请求批准插件的两个私有数据目录权限。插件只申请：
 
 - `fs.read.data`
 - `fs.write.data`

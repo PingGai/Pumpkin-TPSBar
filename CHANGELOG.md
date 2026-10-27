@@ -4,7 +4,7 @@
 
 - feat: 适配 Pumpkin 0.2.1 的插件生命周期与新版 SDK builder API，保留玩家独立开关、指标刷新和卸载清理。
 - chore: 锁定 Pumpkin `0.2.1` Plugin API（`224f9f8144ca53a8d0800acb87607d714196e2a6`），将 Rust 工具链与 CI 升至 `1.97.1`。
-- chore: 将发布线更新为 `0.2`，同步版本化 WASM 产物与第三方许可证归档。
+- chore: 将正式产物命名为 `tpsbar-v0.2+0.2.1.wasm`，开发快照附带完整时间戳版本和 Pumpkin semver。
 - docs: 双语 README 新增 PPM 安装命令 `ppm install 0Y9WQt4l`，更新 Pumpkin 兼容性和项目署名。
 
 ## v0.1+0.1.0-dev - 2026-08-21

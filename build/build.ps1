@@ -33,11 +33,22 @@ if ($packageVersionMatch.Groups['version'].Value -ne $expectedPackageVersion) {
     throw "Cargo.toml 版本必须为 $expectedPackageVersion，与 build/version.txt 不匹配。"
 }
 
+$lockPath = Join-Path $projectRoot 'Cargo.lock'
+$lockContent = [IO.File]::ReadAllText($lockPath, [Text.Encoding]::UTF8)
+$pumpkinVersionMatch = [regex]::Match($lockContent, '(?m)^\[\[package\]\]\r?\nname = "pumpkin-plugin-api"\r?\nversion = "(?<version>[^"]+)"\r?\nsource = "git\+https://github\.com/Pumpkin-MC/Pumpkin\.git')
+if (-not $pumpkinVersionMatch.Success) {
+    throw 'Cargo.lock 中未找到 Pumpkin Plugin API 版本。'
+}
+$pumpkinSemver = $pumpkinVersionMatch.Groups['version'].Value -replace '\+.*$', ''
+if ($pumpkinSemver -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$') {
+    throw "无效 Pumpkin Plugin API 版本：$pumpkinSemver"
+}
+
 if ($Release) {
-    $artifactVersion = "v$releaseLine"
+    $artifactVersion = "v$releaseLine+$pumpkinSemver"
 } else {
     $timestamp = Get-Date -Format 'yyyyMMddHHmm'
-    $artifactVersion = "$releaseLine.0-dev.$timestamp"
+    $artifactVersion = "$releaseLine.0-dev.$timestamp+$pumpkinSemver"
 }
 
 if ([string]::IsNullOrWhiteSpace($OutputDirectory)) {
@@ -67,5 +78,8 @@ if (-not (Test-Path -LiteralPath $sourceArtifact -PathType Leaf)) {
 [IO.Directory]::CreateDirectory($destinationDirectory) | Out-Null
 $artifactName = "tpsbar-$artifactVersion.wasm"
 $destinationPath = Join-Path $destinationDirectory $artifactName
-[IO.File]::Copy($sourceArtifact, $destinationPath, $true)
+if (Test-Path -LiteralPath $destinationPath -PathType Leaf) {
+    throw "目标产物已存在，拒绝覆盖：$destinationPath"
+}
+[IO.File]::Copy($sourceArtifact, $destinationPath)
 Write-Host "已生成：$destinationPath"

@@ -44,35 +44,34 @@ jobs:
       - name: Run Clippy
         run: cargo clippy --target x86_64-unknown-linux-gnu --all-targets -- -D warnings
 
-      - name: Build release WASM
-        run: cargo build --release --target wasm32-wasip2
-
-      - name: Add version to WASM filename
-        id: version
-        shell: bash
+      - name: Build versioned WASM
+        id: artifact
+        shell: pwsh
         run: |
-          release_line="$(tr -d '[:space:]' < build/version.txt)"
-          if [[ ! "$release_line" =~ ^[0-9]+\.[0-9]+$ ]]; then
-            echo "build/version.txt must contain major.minor only, got: $release_line" >&2
-            exit 1
-          fi
+          $releaseLine = (Get-Content -Raw -LiteralPath 'build/version.txt').Trim()
+          if ($env:GITHUB_REF_TYPE -eq 'tag') {
+            if ($env:GITHUB_REF_NAME -ne "v$releaseLine") {
+              throw "Release tag $env:GITHUB_REF_NAME does not match v$releaseLine"
+            }
+            $versionMode = @('-Release')
+          } else {
+            $versionMode = @()
+          }
 
-          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
-            if [[ "$GITHUB_REF_NAME" != "v$release_line" ]]; then
-              echo "Release tag $GITHUB_REF_NAME does not match v$release_line" >&2
-              exit 1
-            fi
-            version="$GITHUB_REF_NAME"
-          else
-            version="$release_line.0-dev.$(date -u +%Y%m%d%H%M)"
-          fi
+          $outputDirectory = Join-Path 'target/ci-artifacts' $env:GITHUB_RUN_ID
+          $arguments = @('-OutputDirectory', $outputDirectory) + $versionMode
+          & ./build/build.ps1 @arguments
+          if ($LASTEXITCODE -ne 0) { throw "build.ps1 exited with code $LASTEXITCODE" }
 
-          echo "value=$version" >> "$GITHUB_OUTPUT"
-          cp target/wasm32-wasip2/release/tpsbar.wasm "target/wasm32-wasip2/release/tpsbar-$version.wasm"
+          $artifact = Get-ChildItem -LiteralPath $outputDirectory -Filter 'tpsbar-*.wasm' | Select-Object -First 1
+          if ($null -eq $artifact) { throw 'Build produced no tpsbar WASM artifact.' }
+          $version = $artifact.BaseName.Substring('tpsbar-'.Length)
+          "value=$version" >> $env:GITHUB_OUTPUT
+          "path=$($artifact.FullName)" >> $env:GITHUB_OUTPUT
 
       - name: Upload WASM artifact
         uses: actions/upload-artifact@v4
         with:
-          name: tpsbar-${{ steps.version.outputs.value }}-${{ github.sha }}
-          path: target/wasm32-wasip2/release/tpsbar-${{ steps.version.outputs.value }}.wasm
+          name: tpsbar-${{ steps.artifact.outputs.value }}-${{ github.sha }}
+          path: ${{ steps.artifact.outputs.path }}
           if-no-files-found: error
