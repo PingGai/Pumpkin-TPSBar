@@ -75,7 +75,9 @@ cargo +1.95.0 clippy --target x86_64-pc-windows-msvc --all-targets -- -D warning
 cargo +1.95.0 build --release
 ```
 
-`.cargo/config.toml` sets `wasm32-wasip2` as the default target. Cargo's raw output is written to `target/wasm32-wasip2/release/tpsbar.wasm`; GitHub Actions and Releases copy it to the versioned name `tpsbar-v0.1.wasm`.
+`.cargo/config.toml` sets `wasm32-wasip2` as the default target. `build/version.txt` is the single release-line source and currently contains `0.1`; Cargo metadata stays at `0.1.0`. Cargo's raw output is written to `target/wasm32-wasip2/release/tpsbar.wasm`.
+
+For a local development snapshot, run `\.\build\build.ps1`; it writes a 12-digit timestamped artifact to `publish/`. For a release, run `\.\build\build.ps1 -Release -OutputDirectory ..\..\OUTPUT\tpsbar` to create `tpsbar-v0.1.wasm`. GitHub Actions uses snapshot versions for non-tag builds and the release version for a matching `v0.1` tag.
 
 GitHub Actions runs formatting, tests, Clippy, and a WASM release build on pushes, pull requests, and manual dispatches, then uploads the WASM artifact for download.
 

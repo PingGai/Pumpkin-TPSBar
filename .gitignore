@@ -1,5 +1,8 @@
 # Rust build output and local plugin binaries
 /target/
+
+# Local Pumpkin server archive (world data, keys and executable)
+/archive/
 /*.wasm
 *.wasm
 

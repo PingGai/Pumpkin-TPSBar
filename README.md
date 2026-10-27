@@ -75,7 +75,9 @@ cargo +1.95.0 clippy --target x86_64-pc-windows-msvc --all-targets -- -D warning
 cargo +1.95.0 build --release
 ```
 
-`.cargo/config.toml` 已将默认目标设为 `wasm32-wasip2`。Cargo 原始构建产物位于 `target/wasm32-wasip2/release/tpsbar.wasm`；GitHub Actions 和 Release 会复制为带版本号的 `tpsbar-v0.1.wasm`。
+`.cargo/config.toml` 已将默认目标设为 `wasm32-wasip2`。`build/version.txt` 是唯一的发布线版本来源，当前为 `0.1`；Cargo 元数据固定为 `0.1.0`。Cargo 原始构建产物位于 `target/wasm32-wasip2/release/tpsbar.wasm`。
+
+本地开发构建可运行 `\.\build\build.ps1`，生成带 12 位时间戳的快照到 `publish/`。正式构建可运行 `\.\build\build.ps1 -Release -OutputDirectory ..\..\OUTPUT\tpsbar`，生成 `tpsbar-v0.1.wasm`。GitHub Actions 对非 tag 构建使用快照版本，对匹配的 `v0.1` tag 使用正式版本。
 
 GitHub Actions 会在 push、Pull Request 和手动触发时运行格式检查、测试、Clippy，并上传可下载的 WASM 构建产物。
 
