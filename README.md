@@ -20,7 +20,7 @@ TPS: 20.00  MSPT: 19.24 ms  PING: 8 ms
 
 - 默认关闭，只对主动执行 `/tpsbar` 的玩家显示。
 - 每名玩家拥有独立 BossBar、Ping、进度指标和持久化开关状态。
-- `/tpsbar empty=toggle` 与 `/tpsbar` 都可切换开关，并提示可以省略子命令；`empty=toggle` 会进入客户端命令补全。
+- `/tpsbar empty=toggle` 与 `/tpsbar` 都可切换开关；只有显式使用 `empty=toggle` 时提示可以省略子命令，直接使用 `/tpsbar` 只反馈开关结果。`empty=toggle` 会进入客户端命令补全。
 - 从 Pumpkin 官方接口读取 TPS、MSPT 与 Ping，不修改世界或游戏逻辑。
 - BossBar 血条默认按 MSPT 填充：`50 MSPT` 时填满；可在配置或 `/tpsbar by mspt|tps|ping` 间切换进度指标。
 - TPS、MSPT、Ping 的数值按健康程度分别着色；标签和单位保持浅灰色。

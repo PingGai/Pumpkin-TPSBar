@@ -20,7 +20,7 @@ The main branch is the **0.3 development line**. The stable release is [v0.2+0.2
 
 - Disabled by default and only shown to players who explicitly run `/tpsbar`.
 - Independent BossBar, ping value, progress metric, and persistent preference for every player.
-- Both `/tpsbar empty=toggle` and `/tpsbar` toggle the bar, with a tip that the subcommand can be omitted. The literal subcommand appears in client completion.
+- Both `/tpsbar empty=toggle` and `/tpsbar` toggle the bar. Only the explicit `empty=toggle` form shows the tip about omitting the subcommand; `/tpsbar` only confirms the toggle result. The literal subcommand appears in client completion.
 - Reads TPS, MSPT, and ping through official Pumpkin APIs without modifying the world or game logic.
 - Fills the BossBar by MSPT by default: `50 MSPT` fills the bar; switch the metric in config or with `/tpsbar by mspt|tps|ping`.
 - Color-coded TPS, MSPT, and ping values, with light-gray labels and units.
