@@ -77,13 +77,13 @@ cargo +1.97.1 build --release
 
 `.cargo/config.toml` sets `wasm32-wasip2` as the default target. `build/version.txt` is the single release-line source and currently contains `0.2`; Cargo metadata stays at `0.2.0`. Cargo's raw output is written to `target/wasm32-wasip2/release/tpsbar.wasm`.
 
-For a local development snapshot, run `.\build\build.ps1`; it writes `tpsbar-0.2.0-dev.<12-digit timestamp>+0.2.1.wasm` to `publish/`. For a release, run `.\build\build.ps1 -Release -OutputDirectory ..\..\OUTPUT\tpsbar` to create `tpsbar-v0.2+0.2.1.wasm`. GitHub Actions calls the same build script: non-tag builds use timestamped snapshots, while a matching `v0.2` tag uses the release version.
+For a local development snapshot, run `.\build\build.ps1`; it writes `tpsbar-0.2.0-dev.<12-digit timestamp>+0.2.1.wasm` to `publish/`. For a release, run `.\build\build.ps1 -Release -OutputDirectory ..\..\OUTPUT\tpsbar` to create `tpsbar-v0.2+0.2.1.wasm`. GitHub Actions calls the same build script: non-tag builds use timestamped snapshots, while a matching `v0.2+0.2.1` tag uses the release version. The ZIP distribution includes the same WASM, the project license, and third-party licenses.
 
 GitHub Actions runs formatting, tests, Clippy, and a WASM release build on pushes, pull requests, and manual dispatches, then uploads the WASM artifact for download.
 
 ### Pumpkin compatibility
 
-TPSBar v0.2 targets Pumpkin `0.2.1` and has been loaded successfully by a server running that version.
+Cross-platform support through [PumpkinMC](https://pumpkinmc.org/). Supported Pumpkin version: `0.2.1`.
 
 ## Installation
 

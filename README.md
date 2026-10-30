@@ -77,13 +77,13 @@ cargo +1.97.1 build --release
 
 `.cargo/config.toml` 已将默认目标设为 `wasm32-wasip2`。`build/version.txt` 是唯一的发布线版本来源，当前为 `0.2`；Cargo 元数据固定为 `0.2.0`。Cargo 原始构建产物位于 `target/wasm32-wasip2/release/tpsbar.wasm`。
 
-本地开发构建可运行 `.\build\build.ps1`，生成 `tpsbar-0.2.0-dev.<12位时间戳>+0.2.1.wasm` 到 `publish/`。正式构建可运行 `.\build\build.ps1 -Release -OutputDirectory ..\..\OUTPUT\tpsbar`，生成 `tpsbar-v0.2+0.2.1.wasm`。GitHub Actions 调用同一构建脚本：非 tag 构建使用时间戳快照，匹配的 `v0.2` tag 使用正式版本。
+本地开发构建可运行 `.\build\build.ps1`，生成 `tpsbar-0.2.0-dev.<12位时间戳>+0.2.1.wasm` 到 `publish/`。正式构建可运行 `.\build\build.ps1 -Release -OutputDirectory ..\..\OUTPUT\tpsbar`，生成 `tpsbar-v0.2+0.2.1.wasm`。GitHub Actions 调用同一构建脚本：非 tag 构建使用时间戳快照，匹配的 `v0.2+0.2.1` tag 使用正式版本。完整 ZIP 分发包包含同名 WASM、主许可证和第三方许可证。
 
 GitHub Actions 会在 push、Pull Request 和手动触发时运行格式检查、测试、Clippy，并上传可下载的 WASM 构建产物。
 
 ### Pumpkin 兼容性
 
-TPSBar v0.2 面向 Pumpkin `0.2.1`，并已在该版本的服务端完成实际加载验证。
+[PumpkinMC](https://pumpkinmc.org/) 跨平台支持，支持的 Pumpkin 版本为 `0.2.1`。
 
 ## 安装
 
