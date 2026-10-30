@@ -60,6 +60,8 @@ if ([string]::IsNullOrWhiteSpace($OutputDirectory)) {
 }
 $destinationDirectory = [IO.Path]::GetFullPath($destinationDirectory)
 
+$previousBuildVersion = $env:TPSBAR_BUILD_VERSION
+$env:TPSBAR_BUILD_VERSION = if ($Release) { "$releaseLine.0+$pumpkinSemver" } else { $artifactVersion }
 Push-Location -LiteralPath $projectRoot
 try {
     & rustup run $toolchain cargo build --locked --release --target wasm32-wasip2
@@ -68,6 +70,7 @@ try {
     }
 } finally {
     Pop-Location
+    $env:TPSBAR_BUILD_VERSION = $previousBuildVersion
 }
 
 $sourceArtifact = Join-Path $projectRoot 'target/wasm32-wasip2/release/tpsbar.wasm'
