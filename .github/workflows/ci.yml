@@ -48,11 +48,7 @@ jobs:
         id: artifact
         shell: pwsh
         run: |
-          $releaseLine = (Get-Content -Raw -LiteralPath 'build/version.txt').Trim()
           $isReleaseTag = $env:GITHUB_REF_TYPE -eq 'tag'
-          if ($isReleaseTag -and $env:GITHUB_REF_NAME -ne "v$releaseLine") {
-            throw "Release tag $env:GITHUB_REF_NAME does not match v$releaseLine"
-          }
 
           $outputDirectory = Join-Path 'target/ci-artifacts' $env:GITHUB_RUN_ID
           if ($isReleaseTag) {
@@ -65,6 +61,9 @@ jobs:
           $artifact = Get-ChildItem -LiteralPath $outputDirectory -Filter 'tpsbar-*.wasm' | Select-Object -First 1
           if ($null -eq $artifact) { throw 'Build produced no tpsbar WASM artifact.' }
           $version = $artifact.BaseName.Substring('tpsbar-'.Length)
+          if ($isReleaseTag -and $env:GITHUB_REF_NAME -ne $version) {
+            throw "Release tag $env:GITHUB_REF_NAME does not match $version"
+          }
           "value=$version" >> $env:GITHUB_OUTPUT
           "path=$($artifact.FullName)" >> $env:GITHUB_OUTPUT
 
@@ -72,5 +71,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tpsbar-${{ steps.artifact.outputs.value }}-${{ github.sha }}
-          path: ${{ steps.artifact.outputs.path }}
+          path: |
+            ${{ steps.artifact.outputs.path }}
+            target/ci-artifacts/${{ github.run_id }}/tpsbar-*.zip
           if-no-files-found: error
