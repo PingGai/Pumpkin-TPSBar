@@ -135,21 +135,21 @@ fn refresh_player_with_sample(
         return None;
     }
 
-    let snapshot = DisplaySnapshot::new(raw_tps, mspt, player.get_ping(), config);
+    let locale = player.get_locale();
+    let ping = player.get_ping();
     let mut state = lock(runtime);
+    let metric = state.persistent_state.metric(key, config.bar.metric);
+    let snapshot = DisplaySnapshot::new(raw_tps, mspt, ping, config, metric);
+    let title = snapshot.title(&state.localizer, &locale, &config.fallback_locale);
     if let Some(entry) = state.bars.get_mut(&key) {
-        entry.bossbar.set_title(snapshot.title());
+        entry.bossbar.set_title(title);
         entry.bossbar.set_health(snapshot.progress);
         if entry.severity != snapshot.bar_severity {
             entry.bossbar.set_color(snapshot.bossbar_color());
             entry.severity = snapshot.bar_severity;
         }
     } else {
-        let bossbar = BossBar::new(
-            snapshot.title(),
-            snapshot.bossbar_color(),
-            BossBarDivision::NoDivision,
-        );
+        let bossbar = BossBar::new(title, snapshot.bossbar_color(), BossBarDivision::NoDivision);
         bossbar.set_health(snapshot.progress);
         bossbar.add_player(player);
         state.bars.insert(

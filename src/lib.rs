@@ -19,12 +19,17 @@ use pumpkin_plugin_api::{
 use crate::{
     config::load_or_create,
     events::LeaveHandler,
-    i18n::Localizer,
+    i18n::{Localizer, diagnostic},
     runtime::{
         PERMISSION_NODE, RuntimeState, SharedRuntime, lock, new_shared_runtime, refresh_all,
         shutdown,
     },
     state::StateStore,
+};
+
+const BUILD_VERSION: &str = match option_env!("TPSBAR_BUILD_VERSION") {
+    Some(version) => version,
+    None => env!("CARGO_PKG_VERSION"),
 };
 
 struct TpsBarPlugin {
@@ -43,9 +48,9 @@ impl Plugin for TpsBarPlugin {
     fn metadata(&self) -> PluginMetadata {
         PluginMetadata {
             name: env!("CARGO_PKG_NAME").to_string(),
-            version: env!("CARGO_PKG_VERSION").to_string(),
+            version: BUILD_VERSION.to_string(),
             authors: vec!["PING".to_string()],
-            description: env!("CARGO_PKG_DESCRIPTION").to_string(),
+            description: diagnostic("zh_cn", "plugin.description", &[]),
             dependencies: vec![],
             permissions: vec![
                 permissions::FS_READ_DATA.to_string(),
@@ -60,10 +65,11 @@ impl Plugin for TpsBarPlugin {
         if let Some(warning) = &loaded_config.warning {
             tracing::warn!(%warning);
         }
-        tracing::info!(path = %loaded_config.path.display(), "TPSBar 配置已加载");
+        tracing::info!(path = %loaded_config.path.display(), "{}", diagnostic(&loaded_config.config.fallback_locale, "config.loaded", &[]));
 
         let localizer = Localizer::load()?;
-        let state_store = StateStore::new(&data_folder);
+        let state_store =
+            StateStore::new(&data_folder).with_locale(&loaded_config.config.fallback_locale);
         let loaded_state = state_store.load();
         if let Some(warning) = &loaded_state.warning {
             tracing::warn!(%warning);
@@ -80,7 +86,15 @@ impl Plugin for TpsBarPlugin {
 
         context.register_permission(&Permission {
             node: PERMISSION_NODE.to_string(),
-            description: "允许玩家切换自己的 TPSBar / Toggle personal TPSBar".to_string(),
+            description: {
+                let state = lock(&self.runtime);
+                state.localizer.message(
+                    &state.config.fallback_locale,
+                    &state.config.fallback_locale,
+                    "diagnostic.permission.description",
+                    &[],
+                )
+            },
             default: PermissionDefault::Op(permission_level),
             children: vec![],
         })?;
@@ -101,13 +115,18 @@ impl Plugin for TpsBarPlugin {
         *self
             .refresh_task_id
             .lock()
-            .map_err(|error| error.to_string())? = Some(refresh_task_id);
+            .unwrap_or_else(std::sync::PoisonError::into_inner) = Some(refresh_task_id);
 
         tracing::info!(
-            version = env!("CARGO_PKG_VERSION"),
+            version = BUILD_VERSION,
             refresh_interval_ticks,
             permission = PERMISSION_NODE,
-            "TPSBar 已加载"
+            "{}",
+            diagnostic(
+                &lock(&self.runtime).config.fallback_locale,
+                "plugin.loaded",
+                &[]
+            )
         );
         Ok(())
     }
@@ -116,13 +135,20 @@ impl Plugin for TpsBarPlugin {
         let task_id = self
             .refresh_task_id
             .lock()
-            .map_err(|error| error.to_string())?
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
             .take();
         if let Some(task_id) = task_id {
             scheduler::cancel_task(task_id);
         }
         let result = shutdown(&self.runtime);
-        tracing::info!("TPSBar 已卸载");
+        tracing::info!(
+            "{}",
+            diagnostic(
+                &lock(&self.runtime).config.fallback_locale,
+                "plugin.unloaded",
+                &[]
+            )
+        );
         result
     }
 }

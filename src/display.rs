@@ -4,30 +4,31 @@ use pumpkin_plugin_api::{
 };
 
 use crate::{
-    config::Config,
+    config::{BarMetric, Config},
+    i18n::Localizer,
     metrics::{Severity, bar_progress, displayed_tps, mspt_severity, ping_severity, tps_severity},
 };
 
 pub struct DisplaySnapshot {
-    pub tps: f64,
-    pub mspt: f64,
-    pub ping: u32,
     pub progress: f32,
     pub bar_severity: Severity,
+    tps: f64,
+    mspt: f64,
+    ping: u32,
     tps_severity: Severity,
     mspt_severity: Severity,
     ping_severity: Severity,
 }
 
 impl DisplaySnapshot {
-    pub fn new(raw_tps: f64, mspt: f64, ping: u32, config: &Config) -> Self {
+    pub fn new(raw_tps: f64, mspt: f64, ping: u32, config: &Config, metric: BarMetric) -> Self {
         let tps = displayed_tps(raw_tps, config.target_tps);
         let bar_severity = mspt_severity(mspt, config.thresholds.mspt);
         Self {
             tps,
             mspt,
             ping,
-            progress: bar_progress(config.bar.metric, tps, mspt, ping, config),
+            progress: bar_progress(metric, tps, mspt, ping, config),
             bar_severity,
             tps_severity: tps_severity(tps, config.thresholds.tps),
             mspt_severity: bar_severity,
@@ -43,18 +44,19 @@ impl DisplaySnapshot {
         }
     }
 
-    pub fn title(&self) -> TextComponent {
-        gray_text("TPS: ")
+    pub fn title(&self, localizer: &Localizer, locale: &str, fallback: &str) -> TextComponent {
+        let label = |key| localizer.message(locale, fallback, key, &[]);
+        gray_text(&label("player.bar.tps"))
             .add_child(colored_text(&format!("{:.2}", self.tps), self.tps_severity))
-            .add_child(gray_text("  MSPT: "))
+            .add_child(gray_text(&label("player.bar.mspt")))
             .add_child(colored_text(
                 &format!("{:.2}", self.mspt),
                 self.mspt_severity,
             ))
-            .add_child(gray_text(" ms"))
-            .add_child(gray_text("  PING: "))
+            .add_child(gray_text(&label("player.bar.ms")))
+            .add_child(gray_text(&label("player.bar.ping")))
             .add_child(colored_text(&self.ping.to_string(), self.ping_severity))
-            .add_child(gray_text(" ms"))
+            .add_child(gray_text(&label("player.bar.ms")))
     }
 }
 

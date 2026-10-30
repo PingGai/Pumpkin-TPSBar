@@ -4,29 +4,20 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use crate::i18n::diagnostic;
 use serde::Deserialize;
 
 pub const DEFAULT_CONFIG_TEMPLATE: &str = include_str!("../assets/config.default.toml");
 const CONFIG_FILE_NAME: &str = "config.toml";
 const CONFIG_SCHEMA_VERSION: u32 = 1;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Deserialize, serde::Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum BarMetric {
     #[default]
     Mspt,
     Tps,
     Ping,
-}
-
-impl BarMetric {
-    pub const fn label(self) -> &'static str {
-        match self {
-            Self::Mspt => "MSPT",
-            Self::Tps => "TPS",
-            Self::Ping => "Ping",
-        }
-    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
@@ -165,117 +156,123 @@ pub struct ConfigLoadResult {
 }
 
 pub fn load_or_create(data_folder: &Path) -> Result<ConfigLoadResult, String> {
+    let fallback = Config::default().fallback_locale;
     fs::create_dir_all(data_folder)
-        .map_err(|error| format!("无法创建插件数据目录 {}：{error}", data_folder.display()))?;
-
+        .map_err(|error| config_io_error(data_folder, &error, &fallback))?;
     let path = data_folder.join(CONFIG_FILE_NAME);
-    create_default_file_if_missing(&path)?;
-
-    let raw = fs::read_to_string(&path)
-        .map_err(|error| format!("无法读取配置文件 {}：{error}", path.display()))?;
-
-    match toml::from_str::<Config>(&raw) {
-        Ok(config) => match config.validate() {
-            Ok(()) => Ok(ConfigLoadResult {
-                config,
-                warning: None,
-                path,
-            }),
-            Err(error) => Ok(ConfigLoadResult {
-                config: Config::default(),
-                warning: Some(format!(
-                    "配置文件 {} 未通过校验，保留原文件并使用内置默认值：{error}",
-                    path.display()
-                )),
-                path,
-            }),
-        },
+    create_default_file_if_missing(&path, &fallback)?;
+    let raw =
+        fs::read_to_string(&path).map_err(|error| config_io_error(&path, &error, &fallback))?;
+    let result = toml::from_str::<Config>(&raw)
+        .map_err(|error| error.to_string())
+        .and_then(|config| {
+            config.validate()?;
+            Ok(config)
+        });
+    match result {
+        Ok(config) => Ok(ConfigLoadResult {
+            config,
+            warning: None,
+            path,
+        }),
         Err(error) => Ok(ConfigLoadResult {
             config: Config::default(),
-            warning: Some(format!(
-                "配置文件 {} 无法解析，保留原文件并使用内置默认值：{error}",
-                path.display()
+            warning: Some(diagnostic(
+                &fallback,
+                "config.fallback",
+                &[("path", &path.display().to_string()), ("error", &error)],
             )),
             path,
         }),
     }
 }
 
-fn create_default_file_if_missing(path: &Path) -> Result<(), String> {
+fn config_io_error(path: &Path, error: &std::io::Error, locale: &str) -> String {
+    diagnostic(
+        locale,
+        "io",
+        &[
+            ("path", &path.display().to_string()),
+            ("error", &error.to_string()),
+        ],
+    )
+}
+
+fn create_default_file_if_missing(path: &Path, locale: &str) -> Result<(), String> {
     let file = OpenOptions::new().write(true).create_new(true).open(path);
     let mut file = match file {
         Ok(file) => file,
         Err(error) if error.kind() == ErrorKind::AlreadyExists => return Ok(()),
-        Err(error) => {
-            return Err(format!("无法创建默认配置文件 {}：{error}", path.display()));
-        }
+        Err(error) => return Err(config_io_error(path, &error, locale)),
     };
-
     file.write_all(DEFAULT_CONFIG_TEMPLATE.as_bytes())
         .and_then(|()| file.sync_all())
-        .map_err(|error| format!("无法写入默认配置文件 {}：{error}", path.display()))
+        .map_err(|error| config_io_error(path, &error, locale))
 }
 
 impl Config {
     fn validate(&self) -> Result<(), String> {
+        let error = |key| diagnostic(&self.fallback_locale, key, &[]);
         if self.schema_version != CONFIG_SCHEMA_VERSION {
-            return Err(format!(
-                "不支持 schema_version={}，当前仅支持 {CONFIG_SCHEMA_VERSION}",
-                self.schema_version
+            return Err(diagnostic(
+                &self.fallback_locale,
+                "config.schema",
+                &[
+                    ("actual", &self.schema_version.to_string()),
+                    ("expected", &CONFIG_SCHEMA_VERSION.to_string()),
+                ],
             ));
         }
         if !(5..=1_200).contains(&self.refresh_interval_ticks) {
-            return Err("refresh_interval_ticks 必须在 5 到 1200 之间".to_string());
+            return Err(error("config.refresh"));
         }
         if !self.target_tps.is_finite() || !(1.0..=100.0).contains(&self.target_tps) {
-            return Err("target_tps 必须是 1.0 到 100.0 之间的有限数值".to_string());
+            return Err(error("config.tps"));
         }
-        if !self.bar.mspt_full.is_finite() || self.bar.mspt_full <= 0.0 {
-            return Err("bar.mspt_full 必须是正的有限数值".to_string());
-        }
-        if !self.bar.ping_full.is_finite() || self.bar.ping_full <= 0.0 {
-            return Err("bar.ping_full 必须是正的有限数值".to_string());
+        for (name, value) in [
+            ("bar.mspt_full", self.bar.mspt_full),
+            ("bar.ping_full", self.bar.ping_full),
+        ] {
+            if !value.is_finite() || value <= 0.0 {
+                return Err(diagnostic(
+                    &self.fallback_locale,
+                    "config.positive",
+                    &[("name", name)],
+                ));
+            }
         }
         if self.permission.default_op_level > 4 {
-            return Err("permission.default_op_level 必须在 0 到 4 之间".to_string());
+            return Err(error("config.permission"));
         }
-        validate_f64_ascending(
-            "thresholds.mspt",
-            [
-                self.thresholds.mspt.green,
-                self.thresholds.mspt.yellow,
-                self.thresholds.mspt.gold,
-            ],
-        )?;
-        validate_f64_ascending(
-            "thresholds.tps",
-            [
-                self.thresholds.tps.red,
-                self.thresholds.tps.gold,
-                self.thresholds.tps.yellow,
-            ],
-        )?;
-
+        let mspt = self.thresholds.mspt;
+        let tps = self.thresholds.tps;
         let ping = self.thresholds.ping;
-        if !(ping.green < ping.yellow && ping.yellow < ping.gold) {
-            return Err("thresholds.ping 的三个阈值必须严格递增".to_string());
+        for (name, values) in [
+            ("thresholds.mspt", [mspt.green, mspt.yellow, mspt.gold]),
+            ("thresholds.tps", [tps.red, tps.gold, tps.yellow]),
+            (
+                "thresholds.ping",
+                [
+                    f64::from(ping.green),
+                    f64::from(ping.yellow),
+                    f64::from(ping.gold),
+                ],
+            ),
+        ] {
+            if values
+                .iter()
+                .any(|value| !value.is_finite() || *value < 0.0)
+                || !(values[0] < values[1] && values[1] < values[2])
+            {
+                return Err(diagnostic(
+                    &self.fallback_locale,
+                    "config.thresholds",
+                    &[("name", name)],
+                ));
+            }
         }
-
         Ok(())
     }
-}
-
-fn validate_f64_ascending(name: &str, values: [f64; 3]) -> Result<(), String> {
-    if values
-        .iter()
-        .any(|value| !value.is_finite() || *value < 0.0)
-    {
-        return Err(format!("{name} 的阈值必须是非负有限数值"));
-    }
-    if !(values[0] < values[1] && values[1] < values[2]) {
-        return Err(format!("{name} 的三个阈值必须严格递增"));
-    }
-    Ok(())
 }
 
 #[cfg(test)]
