@@ -96,9 +96,15 @@ impl StateStore {
         self.locale = locale.to_string();
         self
     }
-    pub fn load(&self) -> StateLoadResult {
+    pub fn load(&self) -> Result<StateLoadResult, String> {
         let mut errors = Vec::new();
-        for path in [&self.path, &self.previous_path, &self.backup_path] {
+        let previous_backup = self.backup_path.with_extension("bak.previous");
+        for path in [
+            &self.path,
+            &self.previous_path,
+            &self.backup_path,
+            &previous_backup,
+        ] {
             match read_state(path, &self.locale) {
                 Ok(Some(state)) => {
                     let warning = (path != &self.path).then(|| {
@@ -108,24 +114,27 @@ impl StateStore {
                             &[("path", &path.display().to_string())],
                         )
                     });
-                    return StateLoadResult { state, warning };
+                    return Ok(StateLoadResult { state, warning });
                 }
                 Ok(None) => {}
                 Err(error) => errors.push(error),
             }
         }
-        StateLoadResult {
-            state: PersistentState::default(),
-            warning: (!errors.is_empty()).then(|| {
-                diagnostic(
-                    &self.locale,
-                    "state.unavailable",
-                    &[("error", &errors.join("; "))],
-                )
-            }),
+        if !errors.is_empty() {
+            return Err(diagnostic(
+                &self.locale,
+                "state.unavailable",
+                &[("error", &errors.join("; "))],
+            ));
         }
+        Ok(StateLoadResult {
+            state: PersistentState::default(),
+            warning: None,
+        })
     }
     pub fn save(&self, state: &PersistentState) -> Result<(), String> {
+        // 没有任何可用副本时拒绝覆盖已有文件，保留管理员恢复的机会。
+        self.load()?;
         let parent = self
             .path
             .parent()
@@ -277,7 +286,7 @@ mod tests {
         state.set_metric(a, BarMetric::Ping);
         state.set_metric(b, BarMetric::Tps);
         store.save(&state)?;
-        let loaded = store.load();
+        let loaded = store.load()?;
         assert_eq!(loaded.state, state);
         assert!(!loaded.state.is_enabled(b));
         assert_eq!(loaded.state.metric(a, BarMetric::Mspt), BarMetric::Ping);
@@ -296,6 +305,39 @@ mod tests {
         Ok(())
     }
     #[test]
+    fn interrupted_backup_rotation_can_recover_player_preferences() -> Result<(), String> {
+        let directory = temporary_directory();
+        let store = StateStore::new(&directory);
+        let mut state = PersistentState::default();
+        state.toggle(PlayerKey { high: 15, low: 16 });
+        store.save(&state)?;
+        fs::rename(
+            &store.path,
+            store.backup_path.with_extension("bak.previous"),
+        )
+        .map_err(|error| error.to_string())?;
+        let recovered = store.load()?;
+        assert_eq!(recovered.state, state);
+        assert!(recovered.warning.is_some());
+        let _ = fs::remove_dir_all(directory);
+        Ok(())
+    }
+
+    #[test]
+    fn corrupt_state_without_recovery_is_not_overwritten() -> Result<(), String> {
+        let directory = temporary_directory();
+        let store = StateStore::new(&directory);
+        fs::create_dir_all(&directory).map_err(|error| error.to_string())?;
+        fs::write(&store.path, "broken player preferences").map_err(|error| error.to_string())?;
+        let original = fs::read(&store.path).map_err(|error| error.to_string())?;
+        assert!(store.load().is_err());
+        assert!(store.save(&PersistentState::default()).is_err());
+        assert_eq!(fs::read(&store.path).ok(), Some(original));
+        let _ = fs::remove_dir_all(directory);
+        Ok(())
+    }
+
+    #[test]
     fn rolling_back_an_unset_metric_restores_default_behavior() {
         let mut state = PersistentState::default();
         let player = PlayerKey { high: 1, low: 2 };
@@ -312,7 +354,7 @@ mod tests {
         store.save(&state)?;
         fs::copy(&store.path, &store.backup_path).map_err(|e| e.to_string())?;
         fs::write(&store.path, "broken").map_err(|e| e.to_string())?;
-        assert_eq!(store.load().state, state);
+        assert_eq!(store.load()?.state, state);
         store.save(&state)?;
         assert_eq!(
             fs::read(&store.path).ok(),
@@ -334,7 +376,7 @@ mod tests {
             .map_err(|error| error.to_string())?;
         assert!(store.save(&state).is_err());
         assert_eq!(fs::read(&store.backup_path).ok(), Some(old_backup));
-        assert_eq!(store.load().state, state);
+        assert_eq!(store.load()?.state, state);
         let _ = fs::remove_dir_all(directory);
         Ok(())
     }
@@ -346,7 +388,7 @@ mod tests {
         let state = PersistentState::default();
         store.save(&state)?;
         fs::rename(&store.path, &store.previous_path).map_err(|e| e.to_string())?;
-        assert!(store.load().warning.is_some());
+        assert!(store.load()?.warning.is_some());
         store.save(&state)?;
         assert!(store.backup_path.exists());
         let _ = fs::remove_dir_all(directory);

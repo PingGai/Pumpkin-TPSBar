@@ -70,7 +70,7 @@ impl Plugin for TpsBarPlugin {
         let localizer = Localizer::load()?;
         let state_store =
             StateStore::new(&data_folder).with_locale(&loaded_config.config.fallback_locale);
-        let loaded_state = state_store.load();
+        let loaded_state = state_store.load()?;
         if let Some(warning) = &loaded_state.warning {
             tracing::warn!(%warning);
         }

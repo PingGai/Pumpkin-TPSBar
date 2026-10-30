@@ -26,7 +26,7 @@
     "config.thresholds": "{name} 的阈值必须是非负有限数值，且严格递增",
     "config.loaded": "TPSBar 配置已加载",
     "state.recovered": "已从 {path} 恢复玩家设置，下次保存时写回主文件",
-    "state.unavailable": "没有可用的玩家状态文件，将使用默认关闭状态：{error}",
+    "state.unavailable": "没有可用的玩家状态文件，已停止加载或保存以保护原文件。请恢复有效状态文件，或移走损坏文件后重试：{error}",
     "state.parent": "状态文件缺少父目录",
     "state.serialize": "无法序列化玩家设置：{error}",
     "state.schema": "{path} 使用不支持的 schema_version={actual}，当前支持 {expected}",

@@ -26,7 +26,7 @@
     "config.thresholds": "{name} thresholds must be nonnegative finite numbers in strictly increasing order",
     "config.loaded": "TPSBar configuration loaded",
     "state.recovered": "Recovered player preferences from {path}; the next save writes the primary file",
-    "state.unavailable": "No usable player state file; starting disabled: {error}",
+    "state.unavailable": "No usable player state file; loading or saving was stopped to preserve existing files. Restore a valid state file or move the damaged files aside before retrying: {error}",
     "state.parent": "State file has no parent directory",
     "state.serialize": "Unable to serialize player preferences: {error}",
     "state.schema": "Unsupported state schema_version={actual} at {path}; supported version: {expected}",
