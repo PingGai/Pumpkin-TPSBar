@@ -58,7 +58,7 @@ Players with permission can select their own metric with `/tpsbar by mspt`, `/tp
 
 The bar color always follows MSPT; its length follows the personal metric. Pumpkin derives TPS from average MSPT over roughly 100 ticks, and TPSBar caps it at `target_tps`. The value has no fixed 1 / 5 / 15 minute window. Refresh intervals use server ticks, so elapsed time between updates grows when the server slows down.
 
-The state file is versioned JSON. Version 0.3 reads 0.2 toggle preferences directly; missing metric overrides use the configured default. Saves use synced temporary files and backup recovery. Back up the private plugin data directory before upgrading; saving preferences after downgrading to 0.2 discards the personal metric fields added in 0.3.
+The state file is versioned JSON. Version 0.3 reads 0.2 toggle preferences directly; missing metric overrides use the configured default. Saves use synced temporary files and backup recovery, including copies left by interrupted backup rotation. If existing state files have no usable recovery copy, loading or saving stops and the original files are preserved. Restore a valid backup or move the damaged files aside before retrying. Back up the private plugin data directory before upgrading; saving preferences after downgrading to 0.2 discards the personal metric fields added in 0.3.
 
 ## I18N strategy
 
