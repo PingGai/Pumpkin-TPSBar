@@ -83,3 +83,34 @@ if (Test-Path -LiteralPath $destinationPath -PathType Leaf) {
 }
 [IO.File]::Copy($sourceArtifact, $destinationPath)
 Write-Host "已生成：$destinationPath"
+
+# 同时提供包含许可证的完整分发包；独立 WASM 仍可直接安装。
+$archivePath = Join-Path $destinationDirectory "tpsbar-$artifactVersion.zip"
+if (Test-Path -LiteralPath $archivePath) {
+    throw "目标分发包已存在，拒绝覆盖：$archivePath"
+}
+$distributionFiles = @(
+    $destinationPath
+    (Join-Path $projectRoot 'LICENSE')
+    (Join-Path $projectRoot 'NOTICE')
+    (Join-Path $projectRoot 'THIRD-PARTY-NOTICES.md')
+    (Join-Path $projectRoot 'LICENSES')
+)
+$archiveStream = [IO.File]::Open($archivePath, [IO.FileMode]::CreateNew)
+$archive = [IO.Compression.ZipArchive]::new($archiveStream, [IO.Compression.ZipArchiveMode]::Create)
+try {
+    foreach ($item in $distributionFiles) {
+        if ([IO.Directory]::Exists($item)) {
+            foreach ($file in [IO.Directory]::EnumerateFiles($item)) {
+                $entryName = "LICENSES/" + [IO.Path]::GetFileName($file)
+                [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, $file, $entryName) | Out-Null
+            }
+        } else {
+            [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, $item, [IO.Path]::GetFileName($item)) | Out-Null
+        }
+    }
+} finally {
+    $archive.Dispose()
+    $archiveStream.Dispose()
+}
+Write-Host "已生成：$archivePath"
