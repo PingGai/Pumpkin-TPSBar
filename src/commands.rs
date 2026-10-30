@@ -38,7 +38,7 @@ pub fn build(runtime: SharedRuntime) -> Command {
     Command::new(&["tpsbar".into()], &description)
         .execute(ToggleHandler {
             runtime: runtime.clone(),
-            show_hint: true,
+            show_hint: false,
         })
         .then(CommandNode::literal("empty=toggle").execute(ToggleHandler {
             runtime,
