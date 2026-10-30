@@ -14,10 +14,13 @@ TPS: 20.00  MSPT: 19.24 ms  PING: 8 ms
 
 The interface layout is inspired by the familiar TPSBar design in Purpur.
 
+The main branch is the **0.3 development line**. The stable release is [v0.2+0.2.1](https://github.com/PingGai/Pumpkin-TPSBar/releases/tag/v0.2%2B0.2.1). Version 0.3 is not released yet; PPM does not install local development builds.
+
 ## Features
 
 - Disabled by default and only shown to players who explicitly run `/tpsbar`.
-- Independent BossBar, ping value, and persistent preference for every player.
+- Independent BossBar, ping value, progress metric, and persistent preference for every player.
+- Both `/tpsbar empty=toggle` and `/tpsbar` toggle the bar, with a tip that the subcommand can be omitted. The literal subcommand appears in client completion.
 - Reads TPS, MSPT, and ping through official Pumpkin APIs without modifying the world or game logic.
 - Fills the BossBar by MSPT by default: `50 MSPT` fills the bar; switch the metric in config or with `/tpsbar by mspt|tps|ping`.
 - Color-coded TPS, MSPT, and ping values, with light-gray labels and units.
@@ -30,7 +33,7 @@ The interface layout is inspired by the familiar TPSBar design in Purpur.
 
 | Node | Default | Purpose |
 | --- | --- | --- |
-| `tpsbar:command.toggle` | `op level 3` | Toggle the sender's own TPSBar |
+| `tpsbar:command.toggle` | `op level 3` | Toggle the sender's TPSBar and select a personal progress metric |
 
 Pumpkin v0.2's permission WIT defines a node as a full name (for example, `minecraft:command.gamemode`). The host registers the supplied string as-is. TPSBar registers `tpsbar:command.toggle` in the `plugin-namespace:node` form, rather than Bukkit/Paper's dot-separated form. The default operator level can be set from `0` to `4`; level `0` makes it available to regular players by default.
 
@@ -51,15 +54,17 @@ BossBar progress defaults:
 - `bar.metric = "tps"`: uses the configured target TPS (20 by default) as full.
 - `bar.metric = "ping"`: fills at `bar.ping_full` (200 by default).
 
-Administrators can switch the live metric with `/tpsbar by mspt`, `/tpsbar by tps`, or `/tpsbar by ping`. The command changes the current server instance; after a restart, the plugin config is used again.
+Players with permission can select their own metric with `/tpsbar by mspt`, `/tpsbar by tps`, or `/tpsbar by ping`. Other players are unaffected, and the selection survives reconnects and restarts. `bar.metric` supplies the default for players without an override. The `by` command does not enable a disabled bar.
 
-The state file is versioned JSON. Saves use a temporary file and backup recovery flow so an interrupted write does not directly corrupt the existing preferences.
+The bar color always follows MSPT; its length follows the personal metric. Pumpkin derives TPS from average MSPT over roughly 100 ticks, and TPSBar caps it at `target_tps`. The value has no fixed 1 / 5 / 15 minute window. Refresh intervals use server ticks, so elapsed time between updates grows when the server slows down.
+
+The state file is versioned JSON. Version 0.3 reads 0.2 toggle preferences directly; missing metric overrides use the configured default. Saves use synced temporary files and backup recovery. Back up the private plugin data directory before upgrading; saving preferences after downgrading to 0.2 discards the personal metric fields added in 0.3.
 
 ## I18N strategy
 
-TPSBar selects messages from each player's client-reported locale instead of forcing one server-wide language through configuration. Version 0.2.0 includes `zh_cn` and `en_us`; `fallback_locale` is used only when the client language is unsupported.
+TPSBar selects `zh_cn` or `en_us` from each player's locale; unsupported languages use `fallback_locale`. The JSON catalogs list `player` first for player messages and labels, followed by `diagnostic` for console output, logs, configuration errors, and storage errors. Diagnostics use the configured locale, or the built-in Chinese default when configuration cannot be parsed. Save failures show players a friendly message; paths and underlying errors remain in server logs. Catalogs are compiled into the WASM and require a rebuild after edits.
 
-TPSBar selects Simplified Chinese or English messages from each player's client-reported locale. For other languages, it uses the configured `fallback_locale`.
+Pumpkin checks command permissions before invoking the plugin. Unknown-command or syntax feedback for users without permission comes from the host and cannot be replaced by these plugin catalogs.
 
 ## Building
 
@@ -75,9 +80,9 @@ cargo +1.97.1 clippy --target x86_64-pc-windows-msvc --all-targets -- -D warning
 cargo +1.97.1 build --release
 ```
 
-`.cargo/config.toml` sets `wasm32-wasip2` as the default target. `build/version.txt` is the single release-line source and currently contains `0.2`; Cargo metadata stays at `0.2.0`. Cargo's raw output is written to `target/wasm32-wasip2/release/tpsbar.wasm`.
+`.cargo/config.toml` sets `wasm32-wasip2` as the default target. `build/version.txt` is the single release-line source and currently contains `0.3`; Cargo metadata stays at `0.3.0`. Cargo's raw output is written to `target/wasm32-wasip2/release/tpsbar.wasm`.
 
-For a local development snapshot, run `.\build\build.ps1`; it writes `tpsbar-0.2.0-dev.<12-digit timestamp>+0.2.1.wasm` to `publish/`. For a release, run `.\build\build.ps1 -Release -OutputDirectory ..\..\OUTPUT\tpsbar` to create `tpsbar-v0.2+0.2.1.wasm`. GitHub Actions calls the same build script: non-tag builds use timestamped snapshots, while a matching `v0.2+0.2.1` tag uses the release version. The ZIP distribution includes the same WASM, the project license, and third-party licenses.
+For a local development snapshot, run `.\build\build.ps1`; it writes `tpsbar-0.3.0-dev.<12-digit timestamp>+0.2.1.wasm` to `publish/`. For a release, run `.\build\build.ps1 -Release -OutputDirectory ..\..\OUTPUT\tpsbar` to create `tpsbar-v0.3+0.2.1.wasm`. GitHub Actions calls the same build script: non-tag builds use timestamped snapshots, while a matching `v0.3+0.2.1` tag uses the release version. The ZIP distribution includes the same WASM, the project license, and third-party licenses.
 
 GitHub Actions runs formatting, tests, Clippy, and a WASM release build on pushes, pull requests, and manual dispatches, then uploads the WASM artifact for download.
 

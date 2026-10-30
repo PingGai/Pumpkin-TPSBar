@@ -6,7 +6,8 @@ target_tps = 20.0
 fallback_locale = "zh_cn"
 
 [bar]
-# 血条进度指标：mspt、tps 或 ping。默认 MSPT。
+# 没有个人选择时的血条进度指标：mspt、tps 或 ping。默认 MSPT。
+# /tpsbar by ... 只修改执行玩家的指标，单独保存在 state.json。
 metric = "mspt"
 # MSPT 达到此值时血条填满；默认 50mspt。
 mspt_full = 50.0
