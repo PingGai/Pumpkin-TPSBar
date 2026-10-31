@@ -14,7 +14,7 @@ TPS: 20.00  MSPT: 19.24 ms  PING: 8 ms
 
 The interface layout is inspired by the familiar TPSBar design in Purpur.
 
-The main branch is the **0.3 development line**. The stable release is [v0.2+0.2.1](https://github.com/PingGai/Pumpkin-TPSBar/releases/tag/v0.2%2B0.2.1). Version 0.3 is not released yet; PPM does not install local development builds.
+The current stable release is **[v0.3+0.2.1](https://github.com/PingGai/Pumpkin-TPSBar/releases/tag/v0.3%2B0.2.1)** for Pumpkin 0.2.1. The previous release is [v0.2+0.2.1](https://github.com/PingGai/Pumpkin-TPSBar/releases/tag/v0.2%2B0.2.1).
 
 ## Features
 

@@ -1,6 +1,6 @@
 # 更新记录
 
-## v0.3 开发版 + Pumpkin 0.2.1 - 2026-10-30
+## v0.3+0.2.1 - 2026-10-31
 
 - feat(commands): 新增带补全的 `/tpsbar empty=toggle`，与空参数共用个人开关；仅显式使用子命令时提示可以省略参数 / Add a suggested explicit toggle command and show the shorter-form tip only when the subcommand is used.
 - fix(preferences): `/tpsbar by mspt|tps|ping` 改为独立保存每名玩家的选择，兼容 0.2 开关数据 / Save personal progress metrics across restarts while preserving 0.2 toggle data.

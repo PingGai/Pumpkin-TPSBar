@@ -14,7 +14,7 @@ TPS: 20.00  MSPT: 19.24 ms  PING: 8 ms
 
 界面布局参考 Purpur 的 TPSBar 使用习惯。
 
-当前 main 为 **0.3 开发线**；正式版本为 [v0.2+0.2.1](https://github.com/PingGai/Pumpkin-TPSBar/releases/tag/v0.2%2B0.2.1)。0.3 尚未正式发布，PPM 安装不会自动获取本地开发包。
+当前稳定版本为 **[v0.3+0.2.1](https://github.com/PingGai/Pumpkin-TPSBar/releases/tag/v0.3%2B0.2.1)**，兼容 Pumpkin 0.2.1；上一版本为 [v0.2+0.2.1](https://github.com/PingGai/Pumpkin-TPSBar/releases/tag/v0.2%2B0.2.1)。
 
 ## 功能
 
